@@ -885,14 +885,22 @@ bool AJB::Server::CommitConnectionToMatchingPlayers(FAJBNetConnection& Connectio
 
 	Info.PlayerID = PlayerID;
 
-	// A reconnect inside the battle map must not lose the character the flow already chose,
-	// so the cached selection is restored instead of leaving CharactorID at 0.
+	// A reconnect inside the battle map must not lose the character the flow already chose.
+	// A first join has no recorded selection yet, and the game spawns the player during the
+	// travel into AJBStage01_P, before the character select step can ever run on the host.
+	// Leaving CharactorID at 0 is what makes the battle map hang on the loading screen with
+	// BROKEN_CHARACTER_SPAWN, so the permitted default character is written here with the
+	// reason logged. The real selection still overwrites this later if the flow records one.
+	const auto Cached = AJB::ProfileCache.CharacterIds.find(Connection.AccountId);
+	if (Cached != AJB::ProfileCache.CharacterIds.end() && Cached->second != 0)
 	{
-		const auto Cached = AJB::ProfileCache.CharacterIds.find(Connection.AccountId);
-		if (Cached != AJB::ProfileCache.CharacterIds.end() && Cached->second != 0)
-		{
-			Info.CharactorID = Cached->second;
-		}
+		Info.CharactorID = Cached->second;
+	}
+	else
+	{
+		Info.CharactorID = static_cast<uint8>(A8CL::AJB::JOTARO);
+
+		LogA("CommitConnectionToMatchingPlayers", std::format("[AccountId]: {} | [Reason]: no character selection is recorded yet, the permitted default character {} is written so the spawn is never left with CharactorID 0.", Connection.AccountId, Info.CharactorID));
 	}
 
 	// The map key is the stable account id, never the array index or the connection order.

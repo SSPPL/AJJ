@@ -1102,6 +1102,133 @@ bool AJB::IsOfType(SDK::UObject* Object, SDK::UClass* Type)
 
 // -- Helpers
 
+// Reflection lookup used by the helpers below. It is file local on purpose: SDK::UProperty is
+// not part of the header's include scope and nothing outside this translation unit needs it.
+// It returns the resolved offset through OutOffset, or leaves it at -1 when the property is
+// missing or unusable.
+static bool FindReflectedPropertyOffsetImpl(SDK::UClass* Class, const char* PropertyName, int32 ExpectedSize, int32* OutOffset)
+{
+	if (OutOffset) *OutOffset = -1;
+	if (!Class || !PropertyName) return false;
+
+	const std::string Wanted{ PropertyName };
+
+	// Walk the class chain the same way the engine does, then the reflected field chain.
+	// Nothing is cached across calls: a class can be re-instanced between maps.
+	for (const SDK::UStruct* Current = Class; Current; Current = Current->SuperStruct)
+	{
+		for (const SDK::UField* Field = Current->Children; Field; Field = Field->Next)
+		{
+			if (Field->GetName() != Wanted) continue;
+
+			// A field with the right name but the wrong kind has no meaningful offset or
+			// element size, so it is refused instead of being reinterpreted.
+			if (!Field->HasTypeFlag(SDK::EClassCastFlags::Property)) continue;
+
+			const SDK::UProperty* Property{ static_cast<const SDK::UProperty*>(Field) };
+
+			// The size check is the part that matters: a stale header offset is only
+			// dangerous when the real member has a different width, and this rejects it.
+			if (Property->ElementSize != ExpectedSize)
+			{
+				LogA("Reflect", std::format("[Property]: {} | [Error]: Reflected size {} does not match the expected {} bytes.",
+					Wanted, Property->ElementSize, ExpectedSize));
+				return false;
+			}
+
+			// A property must fit inside the class it belongs to. This rejects a reflected
+			// entry whose offset would land past the end of the instance.
+			if (Property->Offset < 0 || Property->Offset + Property->ElementSize > Class->Size)
+			{
+				LogA("Reflect", std::format("[Property]: {} | [Error]: Reflected offset {} escapes the class size {}.",
+					Wanted, Property->Offset, Class->Size));
+				return false;
+			}
+
+			if (OutOffset) *OutOffset = Property->Offset;
+			return true;
+		}
+	}
+
+	LogA("Reflect", std::format("[Property]: {} | [Error]: The class does not expose this property.", Wanted));
+	return false;
+}
+
+int32 AJB::FindReflectedPropertyOffset(SDK::UClass* Class, const char* PropertyName, int32 ExpectedSize)
+{
+	int32 Offset{ -1 };
+	FindReflectedPropertyOffsetImpl(Class, PropertyName, ExpectedSize, &Offset);
+	return Offset;
+}
+
+bool AJB::SetOptionsMenuInternalTickRate(float Value)
+{
+	if (!AJB::MOD_OptionsMenu) return false;
+
+	// The validated offset is cached per class. Keying the cache on the class pointer keeps a
+	// recreated widget or a reloaded asset from reusing an offset resolved for another class.
+	static SDK::UClass* CachedClass{ nullptr };
+	static int32 CachedOffset{ -1 };
+
+	if (CachedClass != AJB::MOD_OptionsMenu->Class)
+	{
+		CachedClass = AJB::MOD_OptionsMenu->Class;
+		CachedOffset = AJB::FindReflectedPropertyOffset(CachedClass, "InternalTickRate", static_cast<int32>(sizeof(float)));
+	}
+
+	// -1 means reflection refused the property. The widget keeps working, it simply
+	// keeps its own blueprint default instead of being poked through a stale offset.
+	if (CachedOffset < 0) return false;
+
+	*reinterpret_cast<float*>(reinterpret_cast<uint8*>(AJB::MOD_OptionsMenu) + CachedOffset) = Value;
+	return true;
+}
+
+bool AJB::GetOptionsMenuInternalTickRate(float* OutValue)
+{
+	if (!OutValue || !AJB::MOD_OptionsMenu) return false;
+
+	static SDK::UClass* CachedClass{ nullptr };
+	static int32 CachedOffset{ -1 };
+
+	if (CachedClass != AJB::MOD_OptionsMenu->Class)
+	{
+		CachedClass = AJB::MOD_OptionsMenu->Class;
+		CachedOffset = AJB::FindReflectedPropertyOffset(CachedClass, "InternalTickRate", static_cast<int32>(sizeof(float)));
+	}
+
+	if (CachedOffset < 0) return false;
+
+	*OutValue = *reinterpret_cast<const float*>(reinterpret_cast<const uint8*>(AJB::MOD_OptionsMenu) + CachedOffset);
+	return true;
+}
+
+bool AJB::GetOptionsMenuIsVisible(bool* OutValue)
+{
+	if (!OutValue || !AJB::MOD_OptionsMenu) return false;
+
+	// This flag lives behind the same stale header entry as InternalTickRate, so the header
+	// offset points into the OnToggleMenu delegate. It is resolved through reflection for the
+	// same reason the write is: a wrong offset here is a silently wrong reading of memory.
+	static SDK::UClass* CachedClass{ nullptr };
+	static int32 CachedOffset{ -1 };
+
+	if (CachedClass != AJB::MOD_OptionsMenu->Class)
+	{
+		CachedClass = AJB::MOD_OptionsMenu->Class;
+		CachedOffset = -1;
+		FindReflectedPropertyOffsetImpl(CachedClass, "bIsOptionsMenuVisible", 1, &CachedOffset);
+	}
+
+	if (CachedOffset < 0) return false;
+
+	// The byte is read whole. The reflected element size was validated as one byte and the
+	// offset was validated to stay inside the instance, so this can only ever be a wrong
+	// boolean at worst, never an access outside the widget.
+	*OutValue = *reinterpret_cast<const uint8*>(reinterpret_cast<const uint8*>(AJB::MOD_OptionsMenu) + CachedOffset) != 0;
+	return true;
+}
+
 std::string AJB::PlayerInfoParser(const SDK::FMatchingPlayerInfo& Info)
 {
 	return std::format("[PlayerID]: {} | [GameServerUserID]: {} | [TeamID]: {} | [TeamHostUserID]: {} | [PlayerName]: {} | [PlayerIconID]: {} | [PlayerLevel]: {} | [PlayerTitle]: {} | [CharactorID]: {} | [bIsCameraMode]: {} | [Rate]: {}", Info.PlayerID, Info.GameServerUserID.ToString(), Info.TeamID, Info.TeamHostUserID.ToString(), Info.PlayerName.ToString(), Info.PlayerIconID, Info.PlayerLevel, Info.PlayerTitle.ToString(), Info.CharactorID, Info.bIsCameraMode, Info.Rate);

@@ -809,8 +809,9 @@ SDK::FString* UFunctions::ConsoleCommand(SDK::APlayerController* This, SDK::FStr
 				const float CurrentMaxFPS = OFFSET::VFTable<float(__fastcall*)(SDK::UEngine*)>(GEngine.GetPointer())[OFF::VFT_GetMaxFPS](GEngine.GetPointer());
 
 				// Dynamic polling for different framecaps ensuring no delay, even if you have your game uncapped the game framerate will not actually be uncapped because of a limit Namco placed (I wrote a patch for it and it's still in the codebase but it's not really useful)
-				if (CurrentMaxFPS != 0) AJB::MOD_OptionsMenu->InternalTickRate = CurrentMaxFPS;
-				else AJB::MOD_OptionsMenu->InternalTickRate = AJB::bIsFrameRateUncapped ? 240 : 62;
+				// The write goes through reflection, the hand written header offset can be stale
+				// and a plain float store through a wrong offset destroys a neighbouring pointer.
+				AJB::SetOptionsMenuInternalTickRate(CurrentMaxFPS != 0 ? CurrentMaxFPS : (AJB::bIsFrameRateUncapped ? 240.0f : 62.0f));
 				//else AJB::MOD_OptionsMenu->InternalTickRate = AJB::bIsFrameRateUncapped ? 240 : 62;
 
 				// I'd rather put this in the actual blueprint logic but then ID HAVE TO REDUMP THE SDK AND GET THE NEW STRUCTURE and I don't feel like it until it's actually a proper menu.
@@ -844,7 +845,20 @@ SDK::FString* UFunctions::ConsoleCommand(SDK::APlayerController* This, SDK::FStr
 
 				AJB::MOD_OptionsMenu->bPauseMenuIsVisible ? OFF::SetInputMode_GameAndUIEx.Call<SetInputModeGameAndUI>()(Player, AJB::MOD_OptionsMenu, SDK::EMouseLockMode::LockAlways, false) :  OFF::SetInputGameOnly.Call<SetInputModeGameOnly>()(Player);*/
 
-				UConsole::ConsoleOutput::Text(std::format("[bPauseMenuIsVisible]: {} | [Visibility]: {} | [InternalTickRate]: {}", AJB::MOD_OptionsMenu->bIsOptionsMenuVisible, AJB::MOD_OptionsMenu->Visibility == SDK::ESlateVisibility::Visible ? "Visible" : "Collapsed", AJB::MOD_OptionsMenu->InternalTickRate).c_str());
+				// The tick rate is read back through reflection too, a diagnostic read must never
+				// trust the hand written header more than the write path does.
+				float ReflectedTickRate{ -1.0f };
+				const bool bHasReflectedTickRate{ AJB::GetOptionsMenuInternalTickRate(&ReflectedTickRate) };
+
+				// The visibility flag sits behind the same stale header entry and is read through
+				// reflection as well, so the console dump never reports a value from a bad offset.
+				bool bReflectedMenuVisible{ false };
+				const bool bHasReflectedMenuVisible{ AJB::GetOptionsMenuIsVisible(&bReflectedMenuVisible) };
+
+				UConsole::ConsoleOutput::Text(std::format("[bPauseMenuIsVisible]: {} | [Visibility]: {} | [InternalTickRate]: {}",
+					bHasReflectedMenuVisible ? std::format("{}", bReflectedMenuVisible) : std::string("Unavailable"),
+					AJB::MOD_OptionsMenu->Visibility == SDK::ESlateVisibility::Visible ? "Visible" : "Collapsed",
+					bHasReflectedTickRate ? std::format("{}", ReflectedTickRate) : std::string("Unavailable")).c_str());
 			}
 		}
 	}
@@ -1335,7 +1349,12 @@ UFunctions::BrowseReturnVal UFunctions::Browse(SDK::UEngine* This, SDK::FWorldCo
 		LogA("Browse", "Constructed UConsole early.");
 	}
 
-	if (AJB::MOD_OptionsMenu && AJB::MOD_OptionsMenu->bIsOptionsMenuVisible)
+	// The visibility flag is read through reflection: the hand written header offset for it
+	// lands inside the OnToggleMenu delegate after the asset grew a member the header missed.
+	// A missing flag must not block the toggle, so the widget is only closed when the
+	// reflected read says it is actually open.
+	bool bMenuVisible{ false };
+	if (AJB::MOD_OptionsMenu && AJB::GetOptionsMenuIsVisible(&bMenuVisible) && bMenuVisible)
 	{
 		AJB::MOD_OptionsMenu->ToggleMenu();
 	}

@@ -315,6 +315,29 @@ namespace AJB
 	// The array index is diagnostic information ONLY, it is never used to infer a PlayerID.
 	void DumpMatchingPlayers(const char* Tag);
 
+	// Resolves a reflected property's real byte offset inside a class.
+	//
+	// The hand written CustomSDK headers are a point in time snapshot and the shipped
+	// widget assets are not guaranteed to match them. Writing a member through a stale
+	// header is silent memory corruption, so every raw poke into a mod widget goes
+	// through the engine's own reflection first and refuses to write when the property
+	// is missing or its size does not match. Returns -1 when the property is unusable.
+	__int32 FindReflectedPropertyOffset(SDK::UClass* Class, const char* PropertyName, __int32 ExpectedSize);
+
+	// Writes InternalTickRate on the options menu. Only writes when reflection confirms
+	// the property is a 4 byte float, so a header/asset mismatch can never clobber a
+	// neighbouring member (this is what corrupted the widget delegate table before).
+	bool SetOptionsMenuInternalTickRate(float Value);
+
+	// Reads InternalTickRate back for the diagnostic console dump without poking an
+	// unverified offset. Returns false when the property could not be validated.
+	bool GetOptionsMenuInternalTickRate(float* OutValue);
+
+	// Reads bIsOptionsMenuVisible through reflection. That flag sits after the same stale
+	// header entry as InternalTickRate did, so the raw offset points into the OnToggleMenu
+	// delegate. Returns false when the flag could not be validated.
+	bool GetOptionsMenuIsVisible(bool* OutValue);
+
 	// The local account id for this process. Derived from the -Username= argument, never from
 	// the computer name, a random number or the connection order.
 	std::string GetLocalAccountId();
