@@ -93,11 +93,17 @@ Files: `PCPortSource/Aeyth8/Logic/ServerLogic.cpp`.
 
 ### Deployment and what to watch in the next run
 
-Replace `D:\v33\AJB\Binaries\Win64\dxgi.dll` with `PCPortSource\x64\Proxy\dxgi.dll`. The current
-deployed DLL is a different build (`v0.5.5`, 970240 bytes, 2026-09-25 20:10) that carries
-`skin=` / `SkinBroadcast` / `PlayerProfile.ini` features which are **not** in this repo, so
-redeploying drops those. A copy of the old DLL is kept in
-`D:\v33\AJB\Binaries\Win64\备份\dxgi.dll`.
+Replace `D:\v33\AJB\Binaries\Win64\dxgi.dll` with `PCPortSource\x64\Proxy\dxgi.dll`.
+
+The 970240 byte DLL currently deployed also identifies as `[v0.7.5]` and already contains
+`AJB_MP_SYNC`, `MP-PostLogin-After` and `MP-Session-Rebuild`, so it is an earlier build of this
+same work rather than the unrelated mod DLL. It predates both fixes in this round, which is why
+it still crashes in the menu.
+
+The `skin=` / `SkinBroadcast` build (`[v0.5.5]`, 849408 bytes) is a separate mod DLL that is
+**not** in this repo. A copy of it is kept in the game's backup folder. The two builds are
+unrelated, so overwriting the deployed file loses nothing from this repo - but restoring the
+v0.5.5 DLL later would drop the whole profile pipeline.
 
 The two fixes above are built but **not yet confirmed in game**. In the next dual-process run:
 
