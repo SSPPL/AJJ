@@ -5,7 +5,9 @@ The rule for this tree: a note is written here whenever a change is made.
 
 ---
 
-## Round 5 - 2026-09-26 (uncommitted at time of writing)
+## Round 5 - 2026-09-26
+
+Commit `9a9d5a5` on `main` (`https://github.com/SSPPL/AJJ.git`).
 
 ### 1. Menu crash: `WBP_OptionsMenu` was written through a stale header offset
 
@@ -89,8 +91,22 @@ Files: `PCPortSource/Aeyth8/Logic/ServerLogic.cpp`.
   `.baseline/sdk_hashes.txt`, 4/4 offset files identical, 24/24 inline `PB(0x...)` addresses
   unchanged with none added or removed, and all 56 baseline source files still present.
 
-### Still open
+### Deployment and what to watch in the next run
 
-The two fixes above are built but **not yet confirmed in game**. The dual-process run has to be
-repeated with the new DLL; the log tags to watch are listed in the deployment notes.
+Replace `D:\v33\AJB\Binaries\Win64\dxgi.dll` with `PCPortSource\x64\Proxy\dxgi.dll`. The current
+deployed DLL is a different build (`v0.5.5`, 970240 bytes, 2026-09-25 20:10) that carries
+`skin=` / `SkinBroadcast` / `PlayerProfile.ini` features which are **not** in this repo, so
+redeploying drops those. A copy of the old DLL is kept in
+`D:\v33\AJB\Binaries\Win64\备份\dxgi.dll`.
 
+The two fixes above are built but **not yet confirmed in game**. In the next dual-process run:
+
+- The host must reach `[Browse] /Game/Aeyth8/Maps/FrontEnd/AJBFrontEnd` with no `[CRASH]`
+  banner.
+- `[Reflect]` lines appear only if a property was refused. A refusal is safe - the widget keeps
+  its own blueprint default. No `[Reflect]` line means the property validated and was cached.
+- The console dump prints `[InternalTickRate]: <value>` (or `Unavailable`) and
+  `[bPauseMenuIsVisible]: <true|false>` (or `Unavailable`) from reflection.
+- `CommitConnectionToMatchingPlayers` logs the default-character reason for a first join, and
+  `MP-CheckLoading` shows `Errors found:` without `BROKEN_CHARACTER_SPAWN`.
+- The flow reaches `InGame.Gameplay`.
