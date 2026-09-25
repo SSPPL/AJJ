@@ -1,0 +1,14 @@
+{
+  "account_id": "PCPORT-SESSION-002",
+  "name": "Noriaki Kakyoin",
+  "icon_id": 2,
+  "level": 42,
+  "title": "Hierophant Green",
+  "game_server_user_id": "PCPORT-SESSION-002",
+  "custom_data": {
+    "chara_skin_id": 2,
+    "stand_skin_id": 2,
+    "kill_count": 0,
+    "emotes": []
+  }
+}

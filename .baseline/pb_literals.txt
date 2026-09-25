@@ -1,0 +1,27 @@
+PCPortSource/Aeyth8\Logic\AJB.cpp:463:		Call<void(__thiscall*)(SDK::UPlayerInput*, SDK::FKey Key, float)>(PB(0x17AE2C0))(This, Mapping.Key, 1.0f);
+PCPortSource/Aeyth8\Logic\AJB.cpp:516:				SDK::UClass* TheClass = Call<SDK::UClass * (__fastcall*)()>(PB(0x190E3B0))();
+PCPortSource/Aeyth8\Logic\AJB.cpp:519:				Call<void(__fastcall*)(SDK::UObject*, SDK::UClass*, const wchar_t*, uint32, SDK::UProperty*)>(PB(0x80C8E0))(Interface, TheClass, 0,0,0);
+PCPortSource/Aeyth8\Logic\AJB.cpp:524:			Call<void(__fastcall*)(void*, bool, SDK::FString&)>(PB(0x626770))(This, true, Value); // FConfigCacheIni::Flush
+PCPortSource/Aeyth8\Logic\AJB.cpp:583:		BytePatcher::ReplaceBytes(PB(0x223630), Replacement); // Retrieves the NBAM Save Data by calling externals from nbamsavdat.dll
+PCPortSource/Aeyth8\Logic\AJB.cpp:585:		uintptr_t AMActivator_Destroy{PB(0x20E910)}; // Calls AMActivator_Destroy
+PCPortSource/Aeyth8\Logic\AJB.cpp:594:		uintptr_t RequestOneTimeKey{PB(0x20EB60)}; // Calls AMActivator_RequestOneTimeKey
+PCPortSource/Aeyth8\Logic\AJB.cpp:613:		uintptr_t GetSignatureGeneration{PB(0x20ECA0)};
+PCPortSource/Aeyth8\Logic\AJB.cpp:632:		BytePatcher::ReplaceBytes(PB(0x2238A0), {MOV, 0, RETN, NOP, NOP}); // FDrive, I don't have a proper name but it creates a folder on your F:// drive if you have one, it saves data there.
+PCPortSource/Aeyth8\Logic\AJB.cpp:633:		BytePatcher::ReplaceBytes(PB(0x20FD90), ReturnZero); // Calls AMActivator_Update
+PCPortSource/Aeyth8\Logic\AJB.cpp:640:		//BytePatcher::ReplaceBytes(PB(0x57FBAC), {0x6A, 0x01, 0x58, NOP, NOP}); // push 1 ; pop rax
+PCPortSource/Aeyth8\Logic\AJB.cpp:641:		//BytePatcher::ReplaceBytes(PB(0x49EB10), {MOV, 0x01, RETN, NOP}); // UAJBUtilityFunctionLibrary::IsEditorPreview
+PCPortSource/Aeyth8\Logic\AJB.cpp:646:		//BytePatcher::ReplaceBytes(PB(0x527AF0), {MOV, 0, RETN, NOP, NOP, NOP, NOP}); // UAJBAMSystemObject::IsActiveAJBError
+PCPortSource/Aeyth8\Logic\AJB.cpp:693:			BytePatcher::ReplaceBytes(PB(0x57FBAC), {0x48, 0x31, 0xC0, NOP, NOP});	// UAJBUtilityFunctionLibrary::execIsShipping (Works and makes the debug menu spawn natively / might do other things / causes mouse to always appear ingame (probably because of their retardically designed HideCursorCaller)
+PCPortSource/Aeyth8\Logic\AJB.cpp:728:		//BytePatcher::ReplaceBytes(PB(0x47C7A0),{RETN,NOP}); // UAJBGameInstance::ClearMatchingID
+PCPortSource/Aeyth8\Logic\AJB.cpp:747:	//void* SectionPrivate = Call<void*(__fastcall*)(const wchar_t* Section, const bool Force, const bool Const, const SDK::FString* FileName)>(PB(0x62A910))(L"/Script/Engine.UserInterfaceSettings", false, true, reinterpret_cast<SDK::FString*>(PB(0x305B400)));
+PCPortSource/Aeyth8\Logic\AJB.cpp:752:	SDK::FString ExportedLine = Call<SDK::FString(__fastcall*)(SDK::FString& PropertyName, SDK::FString& PropertyValue)>(PB(0x6275E0))(TheKey, TheValue);
+PCPortSource/Aeyth8\Logic\AJB.cpp:755:	LogA("GEngineIni", reinterpret_cast<SDK::FString*>(PB(0x305B400))->ToString());*/
+PCPortSource/Aeyth8\Logic\AJB.cpp:760:		Call<void(__fastcall*)(void* This, const wchar_t* Section, const wchar_t* Key, const wchar_t* Value, SDK::FString* Filename)>(PB(0x639410))(GConfigCache, L"/Script/Engine.UserInterfaceSettings", L"SoftwareCursors", L"((Default, /Game/Aeyth8/Blueprints/WBP_Cursor.WBP_Cursor_C))", reinterpret_cast<SDK::FString*>(PB(0x305B400)));
+PCPortSource/Aeyth8\Logic\Callbacks\AJBCallbacks.cpp:138:			//static uint64 execPrimitiveSetMaterial(PB(0x18DD3C0));
+PCPortSource/Aeyth8\Logic\ServerLogic.cpp:237:					OFFSET::VFTable<void(__thiscall*)(SDK::APlayerController*, const SDK::FText&)>(NetConnection->PlayerController)[OFF::VFT_ClientMainMenu](NetConnection->PlayerController, (Call<SDK::FText(*)(const SDK::FString&)>(PB(0x5FF820))(SDK::FString{L"CHEATING PIECE OF "}))); // Amazingly works first try first ever compilation, but is identical to me just closing it with UNetConnection::Close
+PCPortSource/Aeyth8\Logic\ServerLogic.cpp:238:					//Call<void(__thiscall*)(SDK::APlayerController*, const SDK::FText&)>(PB(0x18CC510))(NetConnection->PlayerController, (Call<SDK::FText(*)(const SDK::FString&)>(PB(0x5FF820))(SDK::FString{L"CHEATING PIECE OF "}))); //  Does nothing
+PCPortSource/Aeyth8\Tools\UFunctions.cpp:890:		*reinterpret_cast<byte*>(PB(0x305B5A0)) = std::stoi(StrCommand.substr(13));
+PCPortSource/Aeyth8\Tools\UFunctions.cpp:1439:		Call<qword(__fastcall*)(qword, qword)>(PB(0x586500))((qword)DeathRow.Data, (qword)&This->URL);
+PCPortSource/Aeyth8\Tools\UFunctions.cpp:1441:		Call<qword(__fastcall*)(qword, qword)>(PB(0x586500))((qword)DeathRow.Data, (qword)&AllocatedBunch);
+PCPortSource/Aeyth8\Tools\UFunctions.cpp:1443:		Call<qword(__fastcall*)(qword, qword)>(PB(0x586500))((qword)DeathRow.Data, (qword)&AllocatedBunch);
+PCPortSource/Aeyth8\Tools\UFunctions.cpp:1506:				//Call<SDK::FString(__thiscall*)(SDK::FName*, SDK::FString&)>(PB(0x689A10))(&AJB::NAME_ClientJoinOptions, Temp);

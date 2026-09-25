@@ -1,0 +1,9 @@
+*** Begin Patch
+*** Update File: PCPortSource/Aeyth8/Logic/AJB.h
+@@
+ 	const char* PlayerInfoParser(SDK::FMatchingPlayerInfo& Info);
++
++	// Phase 0 diagnostics: prints the full state of MatchingPlayers for a given checkpoint.
++	// The array index is diagnostic information ONLY, it is never used to infer a PlayerID.
++	void DumpMatchingPlayers(const char* Tag);
+*** End Patch

@@ -1,0 +1,22 @@
+{
+  "account_id": "PCPORT-SESSION-001",
+  "name": "JotaroKujo",
+  "title": "WWW",
+  "game_server_user_id": "PCPORT-SESSION-001",
+  "icon_id": 1,
+  "level": 50,
+  "custom_data": {
+    "chara_skin_id": 1,
+    "stand_skin_id": 1,
+    "kill_count": 0,
+    "emotes": [
+      {
+        "emote_id": 1,
+        "voice_id": 1,
+        "emote_name": "YareYare",
+        "voice_name": "YareYareVoice"
+      }
+    ]
+  }
+}
+

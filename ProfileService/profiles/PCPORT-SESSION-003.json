@@ -1,0 +1,14 @@
+{
+  "account_id": "PCPORT-SESSION-003",
+  "name": "Jean Pierre Polnareff",
+  "title": "Chariot Requiem",
+  "game_server_user_id": "PCPORT-SESSION-003",
+  "icon_id": 3,
+  "level": 37,
+  "custom_data": {
+    "chara_skin_id": 3,
+    "stand_skin_id": 3,
+    "kill_count": 0,
+    "emotes": []
+  }
+}
